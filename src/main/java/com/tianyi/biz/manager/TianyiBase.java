@@ -13,15 +13,20 @@ import open189.sign.ParamsSign;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.common.http.HttpClient;
 import com.common.http.HttpException;
 import com.common.http.PostParameter;
 import com.common.http.Response;
+import com.common.util.ChinarequestUtils;
 import com.common.util.JsonUtils;
 import com.tianyi.TianyiException;
 
 public class TianyiBase {
+	
+	private Logger log=LoggerFactory.getLogger(TianyiBase.class);
 
 	private static final String TOKEN_HTTP = "https://oauth.api.189.cn/emp/oauth2/v2/access_token";
 
@@ -34,16 +39,16 @@ public class TianyiBase {
 	 * @throws JsonMappingException
 	 * @throws JsonParseException
 	 */
-	protected Map<String, Object> getTianyiToken(String appId, String appSecret)
-			throws TianyiException {
+	protected Map<String, Object> getTianyiToken(String appId, String appSecret) throws TianyiException {
 		Response response;
 		try {
-			response = new HttpClient(150, 2000, 5000000, 1024 * 1024).post(
-					TOKEN_HTTP, new PostParameter[] {
-							new PostParameter("grant_type",
-									"client_credentials"),
-							new PostParameter("app_id", appId),
-							new PostParameter("app_secret", appSecret) });
+			String chinaURL = ChinarequestUtils.proxyRequest(ChinarequestUtils.CHANNEL_TIANYI_SEND_MSG_CONFIG_ID,
+					TOKEN_HTTP);
+			long start = System.currentTimeMillis();
+			response = HttpClient.newConnection().post(chinaURL,
+					new PostParameter[] { new PostParameter("grant_type", "client_credentials"),
+							new PostParameter("app_id", appId), new PostParameter("app_secret", appSecret) });
+			log.info("china proxy URL:{} time:{}", chinaURL, System.currentTimeMillis() - start);
 			return JsonUtils.toMap(response.getResponseAsString());
 		} catch (HttpException e) {
 			throw new TianyiException(e, "获取天翼TOKEN失败");
@@ -102,7 +107,7 @@ public class TianyiBase {
 
 		Response response;
 		try {
-			response = new HttpClient(150, 30000, 50000, 1024 * 1024).post(url,
+			response = HttpClient.newConnection().post(url,
 					postParameters);
 		} catch (HttpException e) {
 			throw new TianyiException(e, "天翼能力HTTP请求失败");

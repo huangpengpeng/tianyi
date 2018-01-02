@@ -1,0 +1,6 @@
+com\tianyi\biz\manager\TianyiBase.class
+com\tianyi\biz\manager\impl\TemplateSmsMngImpl.class
+com\tianyi\TianyiException.class
+com\tianyi\biz\manager\TemplateSmsMng.class
+com\tianyi\biz\manager\impl\VerificationCodeMngImpl.class
+com\tianyi\biz\manager\VerificationCodeMng.class
